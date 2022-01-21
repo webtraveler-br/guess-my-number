@@ -9,6 +9,7 @@ class Game {
     this.dataBind(".highscore", "highscore", 0);
     this.dataBind(".guess", "guess", "");
     this.dataBind(".message", "message", "Start guessing...");
+    this.dataBind(".number", "number", "?");
     this.addEvent(".btn.check", "checkAction");
     this.addEvent(".btn.again", "againAction");
   }
@@ -57,12 +58,14 @@ class Game {
   }
   againAction() {
     this.random = this.getRandomNumber(this.min, this.max);
+    this.number = "?";
     this.guess = "";
     document.body.style.backgroundColor = "#222222";
     this.message = "Start guessing...";
   }
   victory() {
     document.body.style.backgroundColor = "#60b347";
+    this.number = this.random;
     this.message = "🎉 Correct Number!";
   }
 }
