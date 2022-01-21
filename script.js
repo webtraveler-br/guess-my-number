@@ -1,16 +1,16 @@
-'use strict';
+"use strict";
 
 class Game {
   constructor(min, max, score) {
     this.min = min;
     this.max = max;
     this.random = this.getRandomNumber(min, max);
-    this.dataBind('.score', 'score', score);
-    this.dataBind('.highscore', 'highscore', 0);
-    this.dataBind('.guess', 'guess', '');
-    this.dataBind('.message', 'message', 'Start guessing...');
-    this.addEvent('.btn.check', 'checkAction');
-    this.addEvent('.btn.again', 'againAction');
+    this.dataBind(".score", "score", score);
+    this.dataBind(".highscore", "highscore", 0);
+    this.dataBind(".guess", "guess", "");
+    this.dataBind(".message", "message", "Start guessing...");
+    this.addEvent(".btn.check", "checkAction");
+    this.addEvent(".btn.again", "againAction");
   }
 
   getRandomNumber(min, max) {
@@ -21,9 +21,9 @@ class Game {
   // the class environment (this)
   addEvent(selector, method) {
     const element = document.querySelector(selector);
-    element.onclick = event => {
-      this[method](event);
-    };
+    element.addEventListener("click", () => {
+      this[method]();
+    });
   }
 
   // this method uses getters and setters
@@ -32,8 +32,8 @@ class Game {
   dataBind(selector, variableName, firstValue) {
     const element = document.querySelector(selector);
     const elementAttribute =
-      element.tagName.toLowerCase() === 'input' ? 'value' : 'textContent';
-    element.value = firstValue;
+      element.tagName.toLowerCase() === "input" ? "value" : "textContent";
+    element[elementAttribute] = firstValue;
     Object.defineProperty(this, variableName, {
       enumerable: true,
       get: function () {
@@ -52,19 +52,19 @@ class Game {
       this.victory();
     } else {
       this.score = Number(this.score) - 1;
-      this.message = guess > this.random ? '📈 Too high!' : '📉 Too low!';
+      this.message = guess > this.random ? "📈 Too high!" : "📉 Too low!";
     }
   }
   againAction() {
     this.random = this.getRandomNumber(this.min, this.max);
-    this.guess = '';
-    document.body.style.backgroundColor = '#222222';
-    this.message = 'Start guessing...';
+    this.guess = "";
+    document.body.style.backgroundColor = "#222222";
+    this.message = "Start guessing...";
   }
   victory() {
-    document.body.style.backgroundColor = '#60b347';
-    this.message = '🎉 Correct Number!';
+    document.body.style.backgroundColor = "#60b347";
+    this.message = "🎉 Correct Number!";
   }
 }
 
-const game = new Game(1, 20, 10);
+const game = new Game(1, 20, 5);
