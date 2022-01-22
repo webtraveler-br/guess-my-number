@@ -1,30 +1,44 @@
 "use strict";
 
+// a simple event controller
+class Event {
+  constructor(selector, type, listener) {
+    this.element = document.querySelector(selector);
+    this.type = type;
+    this.listener = listener;
+    this.start();
+  }
+  start() {
+    this.element.addEventListener(this.type, this.listener);
+  }
+  stop() {
+    this.element.removeEventListener(this.type, this.listener);
+  }
+}
+
 class Game {
-  constructor(min, max, score) {
+  constructor(min, max, score, states) {
     this.min = min;
     this.max = max;
+    this.scoreQty = score;
+    this.states = states;
     this.random = this.getRandomNumber(min, max);
     this.dataBind(".score", "score", score);
     this.dataBind(".highscore", "highscore", 0);
     this.dataBind(".guess", "guess", "");
-    this.dataBind(".message", "message", "Start guessing...");
     this.dataBind(".number", "number", "?");
-    this.addEvent(".btn.check", "checkAction");
-    this.addEvent(".btn.again", "againAction");
+    this.dataBind(".message", "message", "Start guessing...");
+    // prettier-ignore
+    // arrow function doesn't bind the "this" environment
+    const check = [".check", "click", () => {this.checkAction()}];
+    // prettier-ignore
+    const again = [".again", "click", () => {this.againAction()}];
+    this.check = new Event(...check);
+    this.again = new Event(...again);
   }
 
   getRandomNumber(min, max) {
     return Math.floor(Math.random() * max + min);
-  }
-
-  // add a event to a dom element that keeps
-  // the class environment (this)
-  addEvent(selector, method) {
-    const element = document.querySelector(selector);
-    element.addEventListener("click", () => {
-      this[method]();
-    });
   }
 
   // this method uses getters and setters
@@ -45,29 +59,53 @@ class Game {
       },
     });
   }
+
+  changeState(state) {
+    document.body.style.backgroundColor = state.backgroundColor;
+    this.message = state.message;
+  }
+
+  // this is a good case of == usefullness
+  // it converts strings into numbers before the comparison
   checkAction() {
-    const guess = Number(this.guess);
-    if (guess === this.random) {
-      if (Number(this.highscore) < Number(this.score))
-        this.highscore = this.score;
+    if (this.guess == this.random) {
+      if (this.highscore < this.score) this.highscore = this.score;
       this.victory();
     } else {
-      this.score = Number(this.score) - 1;
-      this.message = guess > this.random ? "📈 Too high!" : "📉 Too low!";
+      this.score -= 1;
+      this.guess > this.random
+        ? this.changeState(this.states.high)
+        : this.changeState(this.states.low);
+      if (this.score == 0) this.gameOver();
     }
   }
+
   againAction() {
     this.random = this.getRandomNumber(this.min, this.max);
+    this.score = this.scoreQty;
     this.number = "?";
     this.guess = "";
-    document.body.style.backgroundColor = "#222222";
-    this.message = "Start guessing...";
+    this.changeState(this.states.normal);
+    this.check.start();
   }
+
   victory() {
-    document.body.style.backgroundColor = "#60b347";
+    this.changeState(this.states.victory);
     this.number = this.random;
-    this.message = "🎉 Correct Number!";
+    this.check.stop();
+  }
+
+  gameOver() {
+    this.changeState(this.states.gameOver);
+    this.number = "X";
+    this.check.stop();
   }
 }
 
-const game = new Game(1, 20, 5);
+const game = new Game(1, 20, 5, {
+  normal: { backgroundColor: "#222222", message: "Start guessing..." },
+  high: { backgroundColor: "#222222", message: "📈 Too high!" },
+  low: { backgroundColor: "#222222", message: "📉 Too low!" },
+  victory: { backgroundColor: "#60b347", message: "🎉 Correct Number!" },
+  gameOver: { backgroundColor: "#d30521", message: "💥 You lost the game!" },
+});
